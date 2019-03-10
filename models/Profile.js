@@ -3,25 +3,15 @@ const Schema = mongoose.Schema;
 
 // 创建Schema
 const profileSchema = new Schema({
+  title: {
+    type: String,
+    required: true
+  },
   type: {
-    type: String
+    type: String,
+    required: true
   }, 
-  describle: {
-    type: String
-  },
-  income: {
-    type: String,
-    required: true
-  },
-  expend: {
-    type: String,
-    required: true
-  },
-  cash: {
-    type: String,
-    required: true
-  },
-  remark: {
+  describe: {
     type: String
   },
   date: {

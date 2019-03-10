@@ -123,7 +123,7 @@ export default {
               })
               .catch(err=>{
                 console.log(err)
-                this.$message({message: `注册失败:${err}`, type: 'success'})
+                this.$message({message: `注册失败:${err}`, type: 'warning'})
               })
         }
       });

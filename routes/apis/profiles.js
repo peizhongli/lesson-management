@@ -16,23 +16,14 @@ router.get('/test',(req,res) => {
 // @access private
 router.post('/add', passport.authenticate('jwt', {session: false}), (req, res) => {
   let profileFileds = {};
-  if(req.body.type){
-    profileFileds.type = req.body.type;
+  if (req.body.title) {
+    profileFileds.title = req.body.title;
   }
   if (req.body.describe) {
     profileFileds.describe = req.body.describe;
   }
-  if (req.body.income) {
-    profileFileds.income = req.body.income;
-  }
-  if (req.body.expend) {
-    profileFileds.expend = req.body.expend;
-  }
-  if (req.body.cash) {
-    profileFileds.cash = req.body.cash;
-  }
-  if (req.body.remark) {
-    profileFileds.remark = req.body.remark;
+  if (req.body.type) {
+    profileFileds.type = req.body.type;
   }
   new Profile(profileFileds).save().then(profile => {
     res.json(profile);
@@ -76,23 +67,14 @@ router.get('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
 // @access private
 router.post('/edit/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
   let profileFileds = {};
+  if (req.body.title) {
+    profileFileds.title = req.body.title;
+  }
   if (req.body.type) {
     profileFileds.type = req.body.type;
   }
   if (req.body.describe) {
     profileFileds.describe = req.body.describe;
-  }
-  if (req.body.income) {
-    profileFileds.income = req.body.income;
-  }
-  if (req.body.expend) {
-    profileFileds.expend = req.body.expend;
-  }
-  if (req.body.cash) {
-    profileFileds.cash = req.body.cash;
-  }
-  if (req.body.remark) {
-    profileFileds.remark = req.body.remark;
   }
   Profile.findOneAndUpdate(
     {_id: req.params.id},
