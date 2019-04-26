@@ -10,13 +10,29 @@ const profileSchema = new Schema({
   type: {
     type: String,
     required: true
-  }, 
+  },
   describe: {
     type: String
+  },
+  author: {
+    type: String,
+    required: true
   },
   date: {
     type: Date,
     default: Date.now
+  },
+  collections: {
+    type: Array
+  },
+  likes: {
+    type: Array
+  },
+  discussion: {
+    type: Array
+  },
+  cover: {
+    type: String
   }
 });
 

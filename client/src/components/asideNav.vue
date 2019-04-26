@@ -35,6 +35,11 @@
                   <span>我的信息</span>
                 </el-menu-item>
               </router-link>
+              <router-link to="/collection">
+                <el-menu-item index="3-2">
+                  <span>我的收藏</span>
+                </el-menu-item>
+              </router-link>
             </el-menu-item-group>
           </el-submenu>
         </el-menu>
@@ -55,8 +60,18 @@
   }
 </script>
 <style scoped>
+  .aside-nav {
+    position: fixed;
+    left: 0;
+    top: 60px;
+    z-index: 5;
+    width: 200px;
+    height: 100%;
+  }
+  .aside-nav .el-col, .aside-nav ul {
+    height: 100%;
+  }
   .aside-nav a {
-    text-decoration: none;
     color: #333;
   }
   .aside-nav .is-active a {

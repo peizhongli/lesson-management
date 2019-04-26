@@ -18,7 +18,7 @@ export default {
   components: {
     HeadNav,
     asideNav
-  }
+  },
 }
 </script>
 <style scoped>

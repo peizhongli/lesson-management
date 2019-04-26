@@ -21,27 +21,29 @@ axios.interceptors.request.use(config => {
   if (localStorage.userToken) {
     // 配置请求头
     config.headers.Authorization = localStorage.userToken;
+    config.headers.UserName = localStorage.userName;
   }
   return config;
-}), error => {
-  return Promise.reject(error);
-}
+}, err => {
+  return Promise.reject(err);
+})
 
 // 响应拦截
 axios.interceptors.response.use(res => {
   endLoading();
   return res;
-}), error => {
+}, err => {
   endLoading();
-  Message.error(error.res.data);
+  Message.error(err.response.data);
   // 判断身份状态
-  const { status } = error.res;
-  if(status == 401) {
+  const { status } = err.response;
+  console.log(status)
+  if(status === 401) {
     Message.error('身份已过期，请重新登录');
     localStorage.removeItem('userToken');
     this.$router.push('/login')
   }
-  return Promise.reject(error);
-}
+  return Promise.reject(err);
+})
 
 export default axios;

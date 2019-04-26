@@ -13,6 +13,7 @@ const db = require('./config/keys').mongoURI;
 // 使用body-parser中间件
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
+app.use(express.static(__dirname))
 
 //connect to mongodb
 mongoose.connect(db, {useNewUrlParser: true})

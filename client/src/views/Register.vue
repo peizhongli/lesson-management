@@ -3,16 +3,16 @@
     <h2 class="regi-title">注册账户</h2>
     <el-form :model="regi" status-icon :rules="rules" ref="regiForm" label-width="80px" class="regi-form">
       <el-form-item label="用户名" prop="name">
-        <el-input type="text" v-model="regi.name" autocomplete="off" placeholder="请输入用户名" clearable></el-input>
+        <el-input type="text" v-model="regi.name" autocomplete="off" placeholder="请输入用户名" clearable spellcheck="false"></el-input>
       </el-form-item>
       <el-form-item label="邮箱" prop="email">
-        <el-input type="email" v-model="regi.email" autocomplete="off" placeholder="请输入邮箱" clearable></el-input>
+        <el-input type="email" v-model="regi.email" autocomplete="off" placeholder="请输入邮箱" clearable spellcheck="false"></el-input>
       </el-form-item>
       <el-form-item label="密码" prop="password">
-        <el-input type="password" v-model="regi.password" autocomplete="off" placeholder="请输入密码" clearable></el-input>
+        <el-input type="password" v-model="regi.password" autocomplete="off" placeholder="请输入密码" clearable spellcheck="false"></el-input>
       </el-form-item>
       <el-form-item label="确认密码" prop="checkPass">
-        <el-input type="password" v-model="regi.checkPass" autocomplete="off" placeholder="请确认密码" clearable></el-input>
+        <el-input type="password" v-model="regi.checkPass" autocomplete="off" placeholder="请确认密码" clearable spellcheck="false"></el-input>
       </el-form-item>
       <el-form-item label="身份" prop="identity">
         <el-select v-model="regi.identity" placeholder="请选择身份">

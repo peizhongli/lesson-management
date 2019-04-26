@@ -1,12 +1,15 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Index from './views/Index.vue'
-import Notfound from './views/Notfound.vue'
-import Register from './views/Register.vue'
-import Login from './views/Login.vue'
-import Home from './views/Home.vue'
-import UserInfo from './views/UserInfo.vue'
-import Lesson from './views/Lesson.vue'
+import Index from './views/Index'
+import Notfound from './views/Notfound'
+import Register from './views/Register'
+import Login from './views/Login'
+import Home from './views/Home'
+import UserInfo from './views/UserInfo'
+import Lesson from './views/Lesson'
+import Collection from './views/Collection'
+import LessonInfo from './views/LessonInfo'
+import LessonEdit from './views/LessonEdit'
 
 Vue.use(Router)
 
@@ -24,11 +27,11 @@ const router = new Router({
       component: Index,
       children: [
         {
-          path: '', 
-          component: Home
+          path: '',
+          component: Home,
         },
         {
-          path: '/home', 
+          path: '/home',
           component: Home
         },
         {
@@ -37,7 +40,19 @@ const router = new Router({
         },
         {
           path: '/lesson',
-          component: Lesson
+          component: Lesson,
+        },
+        {
+          path: '/collection',
+          component: Collection
+        },
+        {
+          path: '/lessonInfo',
+          component: LessonInfo
+        },
+        {
+          path: '/lessonEdit',
+          component: LessonEdit
         }
       ]
     },

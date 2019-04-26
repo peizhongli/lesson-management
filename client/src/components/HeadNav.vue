@@ -1,17 +1,19 @@
 <template>
   <el-header class="header">
-    <el-col :span="6">欢迎</el-col>
-    <el-col :span="6" :offset="12" class="user-box">
-      <img :src="user.avatar" alt="" class="user-img">
-      <span>{{user.name}}</span>
-      <el-dropdown trigger="click" @command="handleCommand">
-        <i class="el-icon-caret-bottom header-icon"></i>
-        <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item command="userInfo" icon="el-icon-message">个人中心</el-dropdown-item>
-          <el-dropdown-item command="logout" icon="el-icon-circle-close-outline">注销</el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
-    </el-col>
+    <el-row class="top">
+      <el-col :span="6">欢迎</el-col>
+      <el-col :span="6" :offset="12" class="user-box">
+        <img :src="user.avatar" alt="" class="user-img">
+        <span>{{user.name}}</span>
+        <el-dropdown trigger="click" @command="handleCommand">
+          <i class="el-icon-caret-bottom header-icon"></i>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="userInfo" icon="el-icon-message">个人中心</el-dropdown-item>
+            <el-dropdown-item command="logout" icon="el-icon-circle-close-outline">注销</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </el-col>
+    </el-row>
   </el-header>
 </template>
 <script>
@@ -31,7 +33,7 @@ export default {
   methods: {
     handleCommand(command) {
       switch(command) {
-        case 'userInfo': 
+        case 'userInfo':
           this.$router.push('/userInfo');
           break;
         case 'logout':
@@ -53,8 +55,15 @@ export default {
 </script>
 <style scoped>
   .header {
+    padding: 0;
+  }
+  .header .top {
+    position: fixed;
+    top: 0;
+    z-index: 5;
     width: 100%;
-    font-size: 16px;
+    padding: 0 20px;
+    font-size: 14px;
     line-height: 60px;
     color: #fff;
     background-color: #409EFF;

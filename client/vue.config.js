@@ -43,14 +43,11 @@ module.exports = {
     https: false,
     hotOnly: false,
     // 配置跨域
-    proxy: { 
+    proxy: {
       '/api': {
-        target: 'http://localhost:5000/api/',
-        ws: true,
+        target: 'http://localhost:5000/',
+        ws: false,
         changOrigin: true,
-        pathRewrite: {
-          '^/api': ''
-        }
       }
     },
     before: app => {}

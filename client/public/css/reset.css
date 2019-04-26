@@ -1,8 +1,8 @@
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
-del, dfn, em, img, ins, kbd, q, s, samp,
-small, strike, strong, sub, sup, tt, var,
+del, dfn, img, ins, kbd, q, s, samp,
+small, strike, sub, sup, tt, var,
 b, u, i, center,
 dl, dt, dd, ol, ul, li,
 fieldset, form, label, legend,
@@ -13,8 +13,6 @@ menu, nav, output, ruby, section, summary,
 time, mark, audio, video {
 	margin: 0;
 	padding: 0;
-	border: 0;
-	font-size: 100%;
 	font: inherit;
 	vertical-align: baseline;
 }
@@ -41,23 +39,19 @@ table {
 	border-collapse: collapse;
 	border-spacing: 0;
 }
-
-.el-loading{
-  position: absolute;
-  z-index: 2000;
-  background-color: rgba(255,255,255,.7);
-  margin: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  -webkit-transition: opacity .3s;
-  transition: opacity .3s;
+a {
+  text-decoration: none;
 }
-.el-loading-spinner{
-  top: 50%;
-  margin-top: -21px;
-  width: 100%;
-  text-align: center;
-  position: absolute;
+button {
+  border: none;
+  outline: none;
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
+}
+.clearfix::after {
+	content: '';
+	height: 0;
+	display: block;
+	clear: both;
 }

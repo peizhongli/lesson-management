@@ -8,9 +8,7 @@ import jwtDecode from 'jwt-decode';
 
 export default {
   name: 'app',
-  components: {
-    
-  },
+  components: {},
   created() {
     if(localStorage.userToken) {
       const decoded = jwtDecode(localStorage.userToken);
@@ -22,10 +20,21 @@ export default {
 }
 </script>
 <style>
-html,
-body,
 #app {
-  width: 100%;
-  height: 100%;
+  color: #606266;
+  font-family: '微软雅黑';
+}
+body::-webkit-scrollbar {
+  width: 6px;
+  height: 16px;
+  background-color: transparent;
+}
+body::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background-color: #cacaca;
+  height: 10px;
+}
+.el-main {
+  min-height: 100%;
 }
 </style>
