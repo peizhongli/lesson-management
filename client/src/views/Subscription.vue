@@ -1,5 +1,5 @@
 <template>
-  <div id="collection-wrap">
+  <div id="subscription-wrap">
     <div v-if="lessonList.length>0" class="table-container">
       <el-button type="primary" @click="$router.push('home')" round style="margin-bottom:20px">回到首页</el-button>
       <el-row :gutter="15">
@@ -28,13 +28,13 @@
         </el-pagination>
     </div>
     <div class="add-tip-box" v-else>
-      <p>还没有收藏任何课程哦，快去收藏吧~<el-button type="primary" round><router-link to="index">回到首页</router-link></el-button></p>
+      <p>还没有订阅任何课程哦，快去订阅吧~<el-button type="primary" round><router-link to="index">回到首页</router-link></el-button></p>
     </div>
   </div>
 </template>
 <script>
 export default {
-  name: 'collection',
+  name: 'subscription',
   data() {
     return {
       lessonList: [],
@@ -58,7 +58,7 @@ export default {
       this.$axios
         .get("/api/profiles/",{
           params: {
-            collections: window.localStorage.getItem('userName'),
+            subscription: window.localStorage.getItem('userName'),
             currentPage: this.pagination.currentPage,
             pageSize: this.pagination.pageSize
           }
@@ -137,62 +137,62 @@ export default {
 }
 </script>
 <style scoped>
-#collection-wrap a {
+#subscription-wrap a {
   color: #fff;
 }
-#collection-wrap .add-tip-box {
+#subscription-wrap .add-tip-box {
   width: 100%;
   padding: 50px 0 0;
   text-align: center;
 }
-#collection-wrap .el-pagination {
+#subscription-wrap .el-pagination {
    text-align: right;
    margin: 30px 0;
  }
-#collection-wrap .el-card {
+#subscription-wrap .el-card {
    color: #606266;
    margin-bottom: 15px;
  }
- #collection-wrap .lesson-info {
+ #subscription-wrap .lesson-info {
    position: relative;
    padding: 8px 15px;
  }
- #collection-wrap .el-card .el-button {
+ #subscription-wrap .el-card .el-button {
    padding: 0;
    margin: 5px auto 0;
  }
- #collection-wrap .el-card button.to-details {
+ #subscription-wrap .el-card button.to-details {
    position: absolute;
    top: 10px;
    right: 10px;
    font-size: 20px;
    color: #999;
  }
- #collection-wrap .el-card p.title {
+ #subscription-wrap .el-card p.title {
    margin-bottom: 8px;
    overflow: hidden;
    text-overflow: ellipsis;
    white-space: nowrap;
    width: 100%;
  }
- #collection-wrap .el-card .time, #collection-wrap .el-card p.tag, #collection-wrap .el-card p.type {
+ #subscription-wrap .el-card .time, #subscription-wrap .el-card p.tag, #subscription-wrap .el-card p.type {
    font-size: 13px;
    color: #999;
    line-height: 24px;
  }
- #collection-wrap .el-card p.tag {
+ #subscription-wrap .el-card p.tag {
    display: flex;
    justify-content: space-between;
  }
- #collection-wrap .el-card .time, #collection-wrap .el-card p.tag span button {
+ #subscription-wrap .el-card .time, #subscription-wrap .el-card p.tag span button {
    display: inline-block;
    margin-right: 15px;
  }
- #collection-wrap .lesson-cover-wrap {
+ #subscription-wrap .lesson-cover-wrap {
    height: 180px;
    overflow: hidden;
  }
- #collection-wrap img.lesson-cover {
+ #subscription-wrap img.lesson-cover {
    position: relative;
    width: 100%;
    display: block;

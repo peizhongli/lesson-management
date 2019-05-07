@@ -1,22 +1,19 @@
-<template>new
+<template>
   <div id="user-info">
     <el-card>
       <section slot="header">
-        <p class="title">{{newUser.name}}</p>
+        <p class="title">{{userInfo.name}}</p>
+        <el-button type="primary" @click="showDialog" class="edit-btn">编辑</el-button>
       </section>
       <section class="info clearfix">
-        <img :src="newUser.avatar" alt="" class="user-avatar">
+        <img :src="userInfo.avatar" alt="" class="user-avatar">
         <div class="user-content">
-          <!-- <p class="mes">
-            <span class="iconfont icon-people author"> {{newUser.author}}</span>
-            <time class="time el-icon-time">上传于{{newUser.date}}</time>
-          </p> -->
-          <p class="email">{{newUser.email}}</p>
-          <p class="identity">{{newUser.identity}}</p>
+          <p class="name">用户名：{{userInfo.name}}</p>
+          <p class="email">邮箱：{{userInfo.email}}</p>
+          <p class="identity">身份：{{userInfo.identity}}</p>
         </div>
       </section>
     </el-card>
-    <el-button type="primary" @click="showDialog">编辑</el-button>
     <el-dialog title="更新个人信息" :visible.sync="dialogFormVisible">
       <el-form :model="newUser" status-icon :rules="rules" ref="userForm" label-width="80px">
       <el-form-item label="用户名" prop="name">
@@ -35,12 +32,9 @@
         <el-input type="password" v-model="regi.checkPass" autocomplete="off" placeholder="请确认新密码" clearable spellcheck="false"></el-input>
       </el-form-item> -->
       <el-form-item label="身份" prop="identity">{{newUser.identity}}</el-form-item>
-      <el-form-item label="课程封面" prop="avatar">
-          <div class="avatar-wrap" @click="uploadAvatar">
-            <img :src="newUser.avatar" alt="" class="avatar">
-            <input ref="avatarInput" type="file" class="file-upload" @change="addImg">
-          </div>
-        </el-form-item>
+      <el-form-item label="头像" prop="avatar">
+        <avatar-edit :setting="setting" @uploadFile="uploadFile($event)" ref="avatar"></avatar-edit>
+      </el-form-item>
     </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
@@ -50,31 +44,15 @@
   </div>
 </template>
 <script>
+import avatarEdit from '../components/avatarEdit'
 export default {
   name: 'userInfo',
+  components: {avatarEdit},
   data() {
-    let validatePass = (rule, value, callback) => {
-      if (value === '') {
-        callback(new Error('请输入密码'));
-      } else {
-        if (this.regi.checkPass !== '') {
-          this.$refs.regiForm.validateField('checkPass');
-        }
-        callback();
-      }
-    };
-    let confirmPass = (rule, value, callback) => {
-      if (value === '') {
-        callback(new Error('请确认密码'));
-      } else if (value !== this.regi.password) {
-        callback(new Error('两次输入密码不一致!'));
-      } else {
-        callback();
-      }
-    };
     return {
       dialogFormVisible: false,
-      newUser: '',
+      userInfo: {},
+      newUser: {},
       rules: {
         name: [
           {
@@ -101,28 +79,15 @@ export default {
             trigger: 'blur'
           }
         ],
-        password: [
-          {
-            required: true,
-            validator: validatePass,
-            trigger: 'blur'
-          },
-          {
-            min: 6,
-            max: 20,
-            message: '长度在 6 到 20 个字符',
-            trigger: 'blur'
-          }
-        ],
-        checkPass: [
-          {
-            required: true,
-            validator: confirmPass,
-            trigger: 'blur'
-          }
-        ],
       },
       showImg: false,
+      setting: {
+        width: 160,
+        height: 160,
+        maxSize: 2,
+        imgSrc: null
+      },
+      newAvatar: null
     }
   },
   created() {
@@ -134,28 +99,23 @@ export default {
     }
   },
   methods: {
+    uploadFile: function(src) {
+      this.newAvatar = src
+    },
     showDialog: function() {
+      this.newAvatar = null
+      this.newUser = JSON.parse(JSON.stringify(this.userInfo))
       this.dialogFormVisible = true
-    },
-    uploadAvatar() {
-      this.$refs.avatarInput.dispatchEvent(new MouseEvent('click'))
-    },
-    addImg() {
-      console.log('===========添加图片')
-      let reader = new FileReader();
-      let file = event.target.files[0];
-      reader.readAsDataURL(file);
-      reader.onload = ()=>{
-        this.newUser.avatar = reader.result
-        this.showImg = true
-        console.log(this.newUser.avatar)
-      }
+      this.setting.imgSrc = this.newUser.avatar
+      this.$nextTick(()=>{
+        this.$refs.avatar.imgShow = true
+      })
     },
     getUserMes: function() {
       this.$axios.get('/api/users/current')
       .then(res=>{
-        console.log(res.data)
-        this.newUser = res.data
+        this.userInfo = res.data
+        this.$store.getters.user.avatar =  this.userInfo.avatar
       })
       .catch(err=>{
         console.log(err)
@@ -164,41 +124,40 @@ export default {
     updateUserInfo: function() {
       this.$refs.userForm.validate(valid=>{
         if(valid) {
-          let formData = new FormData()
-          let avatar = this.newUser.avatar
-          if(this.$refs.avatarInput.files.length > 0) {
-            avatar = this.$refs.avatarInput.files[0]
+          let data = {}
+          if(this.newAvatar) {
+            let avatar = this.newAvatar.replace(/^data:image\/\w+;base64,/, "")
+            data.avatar = avatar
+          } else {
+            data.avatar = this.newUser.avatar
           }
-          formData.append('avatar', avatar)
-          formData.append('name', this.newUser.name)
-          formData.append('email', this.newUser.email)
-          this.$axios
-            .put(`/api/users/update/${this.newUser.id}`, formData)
-            .then(res => {
-              this.$message({ message: "个人信息已更新", type: "success" });
-              this.dialogFormVisible = false;
-              this.getUserMes();
-            })
-            .catch(err => {
-              console.log(err);
-              this.$message({
-                message: `个人信息更新失败:${err}`,
-                type: "warning"
+          data.name = this.newUser.name
+          data.email = this.newUser.email
+          console.log(data,this.userInfo)
+          if(data.name===this.userInfo.name&&data.email===this.userInfo.email&&data.avatar===this.userInfo.avatar) {
+            this.$message('您没有更新信息哦~')
+          } else {
+            this.$axios.put(`/api/users/update/${this.newUser.id}`, data)
+              .then(res => {
+                this.$message({ message: "个人信息已更新", type: "success" });
+                this.dialogFormVisible = false;
+                this.getUserMes();
+              })
+              .catch(err => {
+                console.log(err);
+                this.$message({
+                  message: `个人信息更新失败:${err.response.data}`,
+                  type: "warning"
+                });
               });
-            });
+          }
         }
       })
     }
   },
 }
 </script>
-<style scoped>
-#user-info .info {
-}
-#user-info img.user-cover {
-  width: 200px;
-  float: left;
-}
+<style>
 #user-info .user-content {
   margin-left: 210px;
 }
@@ -209,25 +168,22 @@ export default {
 #user-info .info p.mes span {
   margin-right: 10px;
 }
-#user-info .avatar-avatar {
-  width: 178px;
-  height: 178px;
-  border: 1px dashed #d9d9d9;
-  border-radius: 6px;
-  cursor: pointer;
+#user-info .el-card .el-card__header {
   position: relative;
-  overflow: hidden;
 }
-#user-info .avatar-wrap input {
-  opacity: 0;
-}
-#user-info .avatar-wrap .avatar {
-  width: 100%;
-  height: auto;
+#user-info .el-card .title {
   display: inline-block;
-  vertical-align: middle;
+  margin-right: 10px;
 }
-#user-info .avatar-wrap:hover {
-  border-color: #409eff;
+#user-info .el-card img {
+  float: left;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+}
+#user-info .el-card .user-content {
+  margin-left: 200px;
+  color: #999;
+  line-height: 30px;
 }
 </style>

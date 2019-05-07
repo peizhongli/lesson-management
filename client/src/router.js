@@ -8,8 +8,12 @@ import Home from './views/Home'
 import UserInfo from './views/UserInfo'
 import Lesson from './views/Lesson'
 import Collection from './views/Collection'
+import Subscription from './views/Subscription'
 import LessonInfo from './views/LessonInfo'
 import LessonEdit from './views/LessonEdit'
+import LessonBrowse from './views/LessonBrowse'
+import LessonEditList from './views/LessonEditList'
+import Test from './components/avatarEdit'
 
 Vue.use(Router)
 
@@ -47,12 +51,24 @@ const router = new Router({
           component: Collection
         },
         {
+          path: '/subscription',
+          component: Subscription
+        },
+        {
           path: '/lessonInfo',
           component: LessonInfo
         },
         {
           path: '/lessonEdit',
           component: LessonEdit
+        },
+        {
+          path: '/lessonBrowse',
+          component: LessonBrowse
+        },
+        {
+          path: '/lessonEditList',
+          component: LessonEditList
         }
       ]
     },
@@ -67,10 +83,15 @@ const router = new Router({
       component: Login
     },
     {
+      path: '/test',
+      name: 'test',
+      component: Test
+    },
+    {
       path: '*',
       name: 'notfound',
       component: Notfound
-    }
+    },
   ]
 })
 

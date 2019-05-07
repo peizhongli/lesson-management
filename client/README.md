@@ -1,4 +1,4 @@
-# client
+# lesson-client
 
 ## Project setup
 ```

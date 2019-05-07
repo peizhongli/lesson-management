@@ -12,12 +12,12 @@
         <el-input type="password" v-model="regi.password" autocomplete="off" placeholder="请输入密码" clearable spellcheck="false"></el-input>
       </el-form-item>
       <el-form-item label="确认密码" prop="checkPass">
-        <el-input type="password" v-model="regi.checkPass" autocomplete="off" placeholder="请确认密码" clearable spellcheck="false"></el-input>
+        <el-input type="password" v-model="regi.checkPass" autocomplete="off" placeholder="请确认密码" spellcheck="false"></el-input>
       </el-form-item>
       <el-form-item label="身份" prop="identity">
         <el-select v-model="regi.identity" placeholder="请选择身份">
-          <el-option label="老师" value="teacher"></el-option>
-          <el-option label="学生" value="student"></el-option>
+          <el-option label="老师" value="老师"></el-option>
+          <el-option label="学生" value="学生"></el-option>
         </el-select>
       </el-form-item>
       <el-button type="primary" @click="submitForm('regiForm')">立即注册</el-button>
@@ -58,55 +58,55 @@ export default {
       },
       rules: {
         name: [
-          { 
-            required: true, 
-            message: '请输入用户名', 
-            trigger: 'blur' 
+          {
+            required: true,
+            message: '请输入用户名',
+            trigger: 'blur'
           },
-          { 
+          {
             min: 2,
-            max: 10, 
-            message: '长度在 1 到 10 个字符', 
-            trigger: 'blur' 
+            max: 10,
+            message: '长度在 1 到 10 个字符',
+            trigger: 'blur'
           }
         ],
         email: [
-          { 
-            required: true, 
-            message: '请输入邮箱地址', 
-            trigger: 'blur' 
+          {
+            required: true,
+            message: '请输入邮箱地址',
+            trigger: 'blur'
           },
-          { 
-            type: 'email', 
-            message: '请输入正确的邮箱地址', 
+          {
+            type: 'email',
+            message: '请输入正确的邮箱地址',
             trigger: 'blur'
           }
         ],
         password: [
-          { 
-            required: true, 
-            validator: validatePass, 
-            trigger: 'blur' 
+          {
+            required: true,
+            validator: validatePass,
+            trigger: 'blur'
           },
-          { 
-            min: 6, 
-            max: 20, 
-            message: '长度在 6 到 20 个字符', 
-            trigger: 'blur' 
+          {
+            min: 6,
+            max: 20,
+            message: '长度在 6 到 20 个字符',
+            trigger: 'blur'
           }
         ],
         checkPass: [
-          { 
-            required: true, 
-            validator: confirmPass, 
-            trigger: 'blur' 
+          {
+            required: true,
+            validator: confirmPass,
+            trigger: 'blur'
           }
         ],
         identity: [
-          { 
-            required: true, 
-            message: '请选择身份', 
-            trigger: 'change' 
+          {
+            required: true,
+            message: '请选择身份',
+            trigger: 'change'
           }
         ]
       }
@@ -122,8 +122,8 @@ export default {
                 this.$router.push('/login');
               })
               .catch(err=>{
-                console.log(err)
-                this.$message({message: `注册失败:${err}`, type: 'warning'})
+                console.log(err.response)
+                this.$message({message: `注册失败:${err.response.data}`, type: 'warning'})
               })
         }
       });

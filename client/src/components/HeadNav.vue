@@ -8,8 +8,8 @@
         <el-dropdown trigger="click" @command="handleCommand">
           <i class="el-icon-caret-bottom header-icon"></i>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="userInfo" icon="el-icon-message">个人中心</el-dropdown-item>
-            <el-dropdown-item command="logout" icon="el-icon-circle-close-outline">注销</el-dropdown-item>
+            <el-dropdown-item command="userInfo" icon="el-icon-user">个人中心</el-dropdown-item>
+            <el-dropdown-item command="logout" icon="el-icon-switch-button">注销</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </el-col>
@@ -21,9 +21,10 @@ export default {
   name: 'headNav',
   components: {},
   data() {
-    return {
-      
-    }
+    return {}
+  },
+  created() {
+    console.log(this.$store.getters.user.avatar)
   },
   computed: {
     user (){

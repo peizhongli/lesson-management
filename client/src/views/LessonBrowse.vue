@@ -4,7 +4,7 @@
       <section slot="header">
         <p class="title">
           {{lessonInfo.title}}
-          <el-button type="primary" @click="subscribeLesson">{{lessonInfo.subscribed?'已订阅':'+订阅'}}</el-button>
+          <el-button type="primary" :class="lessonInfo.subscribed?'subscribed':''" @click="subscribeLesson">{{lessonInfo.subscribed?'已订阅':'+订阅'}}</el-button>
         </p>
         <p class="mes">
           <span class="iconfont icon-people author"> {{lessonInfo.author}}</span>
@@ -16,6 +16,7 @@
       </section>
       <section class="info">
         <div class="lesson-content ql-editor">
+          <p>{{lessonTitle}}</p>
           <div class="lesson-main" v-html="lessonContent"></div>
         </div>
       </section>
@@ -46,9 +47,11 @@ export default {
   data() {
     return {
       lessonId: this.$route.query.lesson,
+      lessonIndex: this.$route.query.index,
       lessonInfo: {},
       lessonContent: '',
-      commentContent: ''
+      commentContent: '',
+      lessonTitle: ''
     }
   },
   created() {
@@ -66,13 +69,15 @@ export default {
       })
     },
     getLessonContent: function() {
-      this.$axios.get(`/api/profiles/edit/${this.lessonId}`)
-      .then(res=>{
-        this.lessonContent = res.data
-      })
-      .catch(err=>{
-        console.log(err)
-      })
+      this.$axios
+        .get(`/api/profiles/edit/${this.lessonId}/${this.lessonIndex}`)
+        .then(res => {
+          this.lessonContent = res.data.content;
+          this.lessonTitle = res.data.title
+        })
+        .catch(err => {
+          console.log(err);
+        });
     },
     postComment: function() {
       let data = {content: this.commentContent}
@@ -116,6 +121,11 @@ export default {
   right: 0;
   top: 50%;
   transform: translateY(-50%);
+}
+#lesson-info p.title button.subscribed {
+  background-color: #e1e1e1;
+  color: #999;
+  border-color: #e1e1e1;
 }
 #lesson-info p.mes {
   color: #999;

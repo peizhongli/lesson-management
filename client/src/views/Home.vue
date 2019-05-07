@@ -1,17 +1,39 @@
 <template>
   <div id="lesson-wrap">
-    <el-row :gutter="15">
+    <el-form :inline="true" :model="searchForm">
+      <el-form-item label="课程名">
+        <el-input v-model="searchForm.title" placeholder="请输入课程名"></el-input>
+      </el-form-item>
+      <el-form-item label="课程类型" prop="type">
+          <el-select v-model="searchForm.type" placeholder="请选择课程分类">
+            <el-option label='全部' value=''></el-option>
+            <el-option
+              v-for="item in typeList"
+              :label="item.name"
+              :value="item.name"
+              :key="item.value"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="searchLesson">搜索</el-button>
+        <el-button @click="searchForm={}">重置</el-button>
+      </el-form-item>
+    </el-form>
+    <el-row :gutter="15" v-if="lessonList.length>0">
       <el-col :span="6" v-for="item in lessonList" :key="item.id">
         <el-card :body-style="{ padding: '0' }" shadow="hover">
           <div class="lesson-cover-wrap"><img :src="item.cover" class="lesson-cover"></div>
           <div class="lesson-info">
             <p class="title">{{item.title}}<button @click="toDetails(item)" class="to-details el-icon-arrow-right"></button></p>
             <div class="bottom clearfix">
+              <p class="type">分类：{{item.type}}</p>
               <time class="time el-icon-time">上传于{{item.date}}</time>
               <p class="tag">
                 <span>
-                  <button class="iconfont icon-like" :style="item.liked?'color:#5cb6ff':''" @click="likeLesson(item)"> {{item.likes.length}}</button>
-                  <button class="iconfont icon-comment" @click="discussLesson(item)"> {{item.discussion.length}}</button>
+                  <button class="el-icon-sugar" :style="item.liked?'color:#5cb6ff':''" @click="likeLesson(item)"> {{item.likes.length}}</button>
+                  <button class="el-icon-chat-dot-round" @click="toDetails(item)"> {{item.discussion.length}}</button>
+                  <button class="el-icon-view">{{item.views}}</button>
                 </span>
                 <button  class="el-icon-star-on collect" :style="item.collected?'color:#5cb6ff':''" @click="collectLesson(item)"></button>
               </p>
@@ -20,12 +42,14 @@
         </el-card>
       </el-col>
     </el-row>
+    <p class="no-result" v-else>没找到结果哦，换个关键词或者分类吧~</p>
     <!-- 分页 -->
     <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pagination.currentPage" :page-sizes="pagination.pageSizes" :page-size="pagination.pageSize" :layout="pagination.layout" :total="pagination.total">
       </el-pagination>
   </div>
 </template>
 <script>
+import typeList from "../static/lessonTypeList.js";
 export default {
   name: 'home',
   components: {},
@@ -39,7 +63,12 @@ export default {
         pageSizes: [8,16,24,32],
         total: 0,
         layout: 'total, sizes, prev, pager, next, jumper',
-      }
+      },
+      searchForm: {
+        title: null,
+        type: null,
+      },
+      typeList,
     }
   },
   created() {
@@ -47,33 +76,34 @@ export default {
   },
   methods: {
     // 获取所有课程信息
-    getLessonList: function() {
-      this.$axios.get('/api/profiles/all')
+    getLessonList: function(params) {
+      this.$axios.get('/api/profiles/',{params})
         .then(res=>{
-          this.lessons = res.data;
-          this.pagination.total = res.data.length;
-          this.lessonList =  res.data.filter((item, index)=>{
-            return index < this.pagination.pageSize;
-          });
+          console.log(res.data)
+          this.lessonList = res.data.data;
+          this.pagination.total = res.data.sum;
         })
         .catch(err=>{
           console.log(err);
-          console.log(err.response.status);
         })
     },
     // 分页
     handleSizeChange(val) {
       this.pagination.currentPage = 1;
       this.pagination.pageSize = val;
-      this.lessonList =  this.lessons.filter((item, index)=>{
-        return index < val;
-      });
+      let page = {
+        pageSize: this.pagination.pageSize,
+        currentPage: this.pagination.currentPage
+      }
+      this.getLessonList(page)
     },
     handleCurrentChange(val) {
       this.pagination.currentPage = val;
-      this.lessonList =  this.lessons.filter((item, index)=>{
-        return index < val*this.pagination.pageSize && index >= (val-1)*this.pagination.pageSize;
-      });
+      let page = {
+        pageSize: this.pagination.pageSize,
+        currentPage: this.pagination.currentPage
+      }
+      this.getLessonList(page)
     },
     // 收藏
     collectLesson(item) {
@@ -117,6 +147,16 @@ export default {
     // 详情页
     toDetails: function(item) {
       this.$router.push({path: 'lessonInfo', query: { lesson: item.id }})
+    },
+    // 搜索
+    searchLesson: function() {
+      for(let i in this.searchForm) {
+        this.pagination.currentPage = 1
+        if (this.searchForm[i] === '' || this.searchForm[i] === undefined) {
+          this.searchForm[i] = null
+        }
+      }
+      this.getLessonList(this.searchForm)
     }
   },
 }
@@ -152,10 +192,12 @@ export default {
    white-space: nowrap;
    width: 100%;
  }
- #lesson-wrap .el-card .time, #lesson-wrap .el-card p.tag {
+ #lesson-wrap .el-card .time, #lesson-wrap .el-card p.tag, #lesson-wrap .el-card p.type {
    font-size: 13px;
    color: #999;
-   margin-top: 5px;
+   line-height: 24px;
+ }
+ #lesson-wrap .el-card p.tag {
    display: flex;
    justify-content: space-between;
  }
@@ -173,5 +215,12 @@ export default {
    display: block;
    top: 50%;
    transform: translateY(-50%);
+ }
+ #lesson-wrap p.no-result {
+   width: 100%;
+   padding-top: 50px;
+   text-align: center;
+   font-size: 14px;
+   color: #999;
  }
 </style>

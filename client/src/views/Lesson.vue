@@ -1,8 +1,8 @@
 <template>
   <div>
-    <div v-if="tableData.length > 0" class="table-container">
+    <div v-if="LessonList.length > 0" class="table-container">
       <el-button type="primary" @click="handlerAdd" round class="add-btn">添加</el-button>
-      <el-table :data="tableData" style="width: 100%" border max-height="320">
+      <el-table :data="LessonList" style="width: 100%" border>
         <el-table-column label="上传日期" align="center" width="200">
           <template slot-scope="scope">
             <i class="el-icon-time"></i>
@@ -10,20 +10,21 @@
           </template>
         </el-table-column>
         <el-table-column label="课程标题" prop="title" align="center"></el-table-column>
-        <el-table-column label="课程类型" prop="type" align="center"></el-table-column>
+        <el-table-column label="课程分类" prop="type" align="center"></el-table-column>
         <el-table-column label="课程描述" prop="describe" align="center" show-overflow-tooltip></el-table-column>
         <el-table-column
           prop="cover"
           label="封面"
-          width="180">
+          width="120">
           <template slot-scope="scope">
-            <img :src="scope.row.cover" style="width: 50px;height:50px;">
+            <img :src="scope.row.cover" width="100px">
           </template>
         </el-table-column>
         <el-table-column label="操作" align="center" min-width="150px">
           <template slot-scope="scope">
-            <el-button size="mini" type="primary" @click="editLesson(scope.$index, scope.row)">编辑</el-button>
-            <el-button size="mini" type="danger" @click="offlineLesson(scope.$index, scope.row)">删除</el-button>
+            <el-button size="mini" @click="toEdit(scope.row)">前往</el-button>
+            <el-button size="mini" type="primary" @click="editLesson(scope.row)">编辑</el-button>
+            <el-button size="mini" type="danger" @click="offlineLesson(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -50,8 +51,8 @@
         <el-form-item label="课程描述" prop="describe" :label-width="formLabelWidth">
           <el-input v-model="dialogForm.describe" autocomplete="off" clearable spellcheck="false"></el-input>
         </el-form-item>
-        <el-form-item label="课程类型" :label-width="formLabelWidth" prop="type">
-          <el-select v-model="dialogForm.type" placeholder="请选择课程类型">
+        <el-form-item label="课程分类" :label-width="formLabelWidth" prop="type">
+          <el-select v-model="dialogForm.type" placeholder="请选择课程分类">
             <el-option
               v-for="item in typeList"
               :label="item.name"
@@ -61,29 +62,25 @@
           </el-select>
         </el-form-item>
         <el-form-item label="课程封面" prop="cover" :label-width="formLabelWidth">
-          <div class="cover-wrap" @click="uploadCover">
-            <img :src="dialogForm.cover" alt="" class="cover">
-            <input ref="coverInput" type="file" class="file-upload" @change="addImg">
-          </div>
+          <avatar-edit :setting="setting" @uploadFile="uploadFile($event)" ref="avatar"></avatar-edit>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
         <el-button type="primary" @click="submitLessonForm('lessonForm', lessonId)">确 定</el-button>
-        <el-button type="primary" @click="toEdit(lessonId)">编辑课程详情</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 <script>
-import typeList from "../static/lessonTypeList.js";
+import typeList from "../static/lessonTypeList.js"
+import avatarEdit from '../components/avatarEdit'
 export default {
   name: "lesson",
-  components: {},
+  components: {avatarEdit},
   data() {
     return {
       dialogTitle: "",
-      tableData: [],
       LessonList: [],
       dialogFormVisible: false,
       dialogForm: {
@@ -92,7 +89,6 @@ export default {
         describe: "",
         cover: ""
       },
-      showImg: false,
       formLabelWidth: "120px",
       typeList,
       formRules: {
@@ -112,7 +108,7 @@ export default {
         type: [
           {
             required: true,
-            message: "请选择课程类型",
+            message: "请选择课程分类",
             trigger: "change"
           }
         ]
@@ -124,7 +120,14 @@ export default {
         pageSizes: [5, 10, 15, 30],
         total: 0,
         layout: "total, sizes, prev, pager, next, jumper"
-      }
+      },
+      setting: {
+        width: 160,
+        height: 160,
+        maxSize: 2,
+        imgSrc: null
+      },
+      newCover: null
     };
   },
   created() {
@@ -134,13 +137,16 @@ export default {
     // 获取课程信息
     getProfile() {
       this.$axios
-        .get("/api/profiles")
+        .get("/api/profiles",{
+          params: {
+            author: window.localStorage.getItem('userName'),
+            currentPage: this.pagination.currentPage,
+            pageSize: this.pagination.pageSize
+          }
+        })
         .then(res => {
-          this.LessonList = res.data;
-          this.pagination.total = res.data.length;
-          this.tableData = res.data.filter((item, index) => {
-            return index < this.pagination.pageSize;
-          });
+          this.LessonList = res.data.data;
+          this.pagination.total = res.data.sum;
         })
         .catch(err => {
           console.log(err);
@@ -151,44 +157,52 @@ export default {
     handleSizeChange(val) {
       this.pagination.currentPage = 1;
       this.pagination.pageSize = val;
-      this.tableData = this.LessonList.filter((item, index) => {
-        return index < val;
-      });
+      let page = {
+        pageSize: this.pagination.pageSize,
+        currentPage: this.pagination.currentPage
+      }
+      this.getProfile()
     },
     handleCurrentChange(val) {
       this.pagination.currentPage = val;
-      this.tableData = this.LessonList.filter((item, index) => {
-        return (
-          index < val * this.pagination.pageSize &&
-          index >= (val - 1) * this.pagination.pageSize
-        );
-      });
+      let page = {
+        pageSize: this.pagination.pageSize,
+        currentPage: this.pagination.currentPage
+      }
+      this.getProfile()
     },
 
     // 添加课程信息
     handlerAdd() {
       this.dialogTitle = "添加课程信息";
-      // this.dialogForm = {};
+      this.dialogForm = {}
+      console.log(this.$refs.lessonForm)
+      if(this.$refs.lessonForm) {
+        this.$refs.lessonForm.resetFields();
+      }
+      this.lessonId = null
+      this.setting.imgSrc = null
       this.dialogFormVisible = true;
-      this.showImg = false
     },
 
     // 编辑课程信息
-    editLesson(index) {
+    editLesson(item) {
+      console.log(item)
       this.dialogTitle = "修改课程信息";
-      this.dialogForm = this.tableData[index];
+      this.dialogForm = item;
+      this.setting.imgSrc = item.cover
       this.dialogFormVisible = true;
-      this.lessonId = this.tableData[index]._id;
+      this.lessonId = item.id;
     },
 
-    toEdit(lessonId) {
-      this.$router.push({path: 'lessonEdit', query: { lesson: lessonId }})
+    toEdit(item) {
+      this.$router.push({path: 'lessonEditList', query: { lesson: item.id }})
     },
 
     // 删除课程信息
-    offlineLesson(index) {
+    offlineLesson(item) {
       this.$confirm(
-        `即将下线"${this.tableData[index].title}", 是否继续?`,
+        `即将下线"${item.title}", 是否继续?`,
         "提示",
         {
           confirmButtonText: "确定",
@@ -198,7 +212,7 @@ export default {
       )
         .then(() => {
           this.$axios
-            .delete(`/api/profiles/delete/${this.tableData[index]._id}`)
+            .delete(`/api/profiles/delete/${item.id}`)
             .then(res => {
               this.$message({ message: "课程已下线", type: "info" });
               this.getProfile();
@@ -215,24 +229,35 @@ export default {
       console.log(lessonId);
       this.$refs[formName].validate(valid => {
         if (valid) {
-          let formData = new FormData()
-          let cover = this.dialogForm.cover
-          if(this.$refs.coverInput.files.length > 0) {
-            cover = this.$refs.coverInput.files[0]
-          }
-          formData.append('cover', cover)
-          formData.append('title', this.dialogForm.title)
-          formData.append('type', this.dialogForm.type)
-          formData.append('describe', this.dialogForm.describe)
+          let data = {}
+          data.title = this.dialogForm.title
+          data.type = this.dialogForm.type
+          data.describe = this.dialogForm.describe
           if (!this.lessonId) {
+            if(this.newCover) {
+              let cover = this.newCover.replace(/^data:image\/\w+;base64,/, "")
+              data.cover = cover
+            } else {
+              data.cover = ''
+            }
             this.$axios
-              .post("/api/profiles/add", formData)
+              .post("/api/profiles/add", data)
               .then(res => {
-                this.$message({ message: "课程创建成功", type: "success" });
+                console.log(res)
                 this.dialogFormVisible = false;
+                this.pagination.currentPage = 1;
                 this.getProfile();
                 this.lessonId = ''
-                this.pagination.currentPage = 1;
+                this.$message({ message: "课程创建成功", type: "success" });
+                this.$confirm('前往添加第一节课程?拥有至少一节课程才可以被同学们看到哦', '提示', {
+                  confirmButtonText: '立即前往',
+                  cancelButtonText: '稍后添加',
+                  type: 'success'
+                }).then(() => {
+                  this.$router.push({path: 'lessonEdit', query: { lesson: res.data.id }})
+                }).catch(() => {
+                  returns
+                });
               })
               .catch(err => {
                 this.$message({
@@ -241,8 +266,14 @@ export default {
                 });
               });
           } else {
+            if(this.newCover) {
+              let cover = this.newCover.replace(/^data:image\/\w+;base64,/, "")
+              data.cover = cover
+            } else {
+              data.cover = this.setting.imgSrc
+            }
             this.$axios
-              .put(`/api/profiles/edit/${this.lessonId}`, formData)
+              .put(`/api/profiles/edit/${this.lessonId}`, data)
               .then(res => {
                 this.$message({ message: "课程信息已更新", type: "success" });
                 this.dialogFormVisible = false;
@@ -258,50 +289,10 @@ export default {
           }
         }
       });
-      // if(this.dialogForm.cover !== '') {
-      //   let cover = this.$refs.coverInput.files[0]
-      //   let formData = new FormData()
-      //   formData.append('cover', cover)
-      //   formData.append('name', 111)
-      //   this.$axios.post('/api/api/profiles/uploadImg', formData)
-      //     .then(res=>{
-      //       console.log(res)
-      //     })
-      //     .catch(err=>{
-      //       console.log(err)
-      //     })
-      // }
     },
-
-    handleAvatarSuccess(res, file) {
-      this.dialogForm.cover = URL.createObjectURL(file.raw);
+    uploadFile: function(src) {
+      this.newCover = src
     },
-    beforeAvatarUpload(file) {
-      const isJPG = file.type === "image/jpeg"||"image/png";
-      const isLt2M = file.size / 1024 / 1024 < 2;
-      if (!isJPG) {
-        this.$message.error("上传头像图片只能是 JPG或PNG 格式!");
-      }
-      if (!isLt2M) {
-        this.$message.error("上传头像图片大小不能超过 2MB!");
-      }
-      return isJPG && isLt2M;
-    },
-    uploadCover() {
-      this.$refs.coverInput.dispatchEvent(new MouseEvent('click'))
-    },
-    addImg() {
-      console.log('===========添加图片')
-      let reader = new FileReader();
-      let file = event.target.files[0];
-      reader.readAsDataURL(file);
-      reader.onload = ()=>{
-        this.dialogForm.cover = reader.result
-        this.showImg = true
-        console.log(this.dialogForm.cover)
-      }
-    }
-
   }
 };
 </script>
@@ -346,4 +337,11 @@ export default {
 .cover-wrap:hover {
   border-color: #409eff;
 }
+</style>
+<style>
+  .el-dialog {
+    margin-top: 0!important;
+    top: 50%;
+    transform: translateY(-50%);
+  }
 </style>

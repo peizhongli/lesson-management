@@ -33,6 +33,18 @@ const profileSchema = new Schema({
   },
   cover: {
     type: String
+  },
+  articlePath: {
+    type: String
+  },
+  views: {
+    type: Number
+  },
+  subscription: {
+    type: Array
+  },
+  articleList: {
+    type: Array
   }
 });
 

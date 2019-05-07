@@ -7,6 +7,7 @@ const User = require('../../models/User');
 const keys = require('../../config/keys');
 const passport = require('passport');
 const multer = require('multer');
+const fs = require('fs');
 
 const router = express.Router();
 const storage = multer.diskStorage({
@@ -31,12 +32,15 @@ router.get('/test',(req,res) => {
 // @desc 返回的请求的json数据
 // @access public
 router.post('/register', (req,res)=>{
-  console.log(req.body);
   // 查询数据库中是否存在
-  User.findOne({email:req.body.email})
+  User.findOne({$or:[{name:req.body.name},{email:req.body.email}]})
     .then((user)=>{
       if(user){
-        return res.status(400).json('邮箱已被注册');
+        if(user.name === req.body.name) {
+          return res.status(400).json('用户名已被注册');
+        } else {
+          return res.status(400).json('邮箱已被注册');
+        }
       } else {
         const newUser = new User({
           name: req.body.name,
@@ -103,24 +107,60 @@ router.post('/login',(req,res)=>{
 // $route POST api/users/update
 // @desc 修改个人信息
 // @access private
-router.put('/update/:id', passport.authenticate('jwt', { session: false }), upload.single('avatar'), (req, res, next) => {
-  console.log(req.body)
-  console.log(req.file)
-  let avatar = ''
-  if (req.file !== undefined) {
-    avatar = `http://localhost:5000/${req.file.destination}${req.file.filename}`
-  } else {
-    avatar = req.body.avatar
-  }
-  User.findOneAndUpdate(
-    { _id: req.params.id },
-    { $set: {
-      name: req.body.name,
-      email: req.body.email,
-      avatar: avatar
-    }},
-    { new: true }
-  ).then(user => res.json('更新个人信息成功'))
+router.put('/update/:id', passport.authenticate('jwt', { session: false }), (req, res, next) => {
+  User.findOne({_id: {$ne:req.params.id},$or:[{name:req.body.name},{email:req.body.email}]}).then(user=>{
+    if(user) {
+      if(user.name === req.body.name) {
+        return res.status(400).json('用户名已被注册');
+      } else {
+        return res.status(400).json('邮箱已被注册');
+      }
+    } else {
+      let avatar = null
+      if(req.body.avatar!=='http://localhost:5000/assets/img/avatar.png') {
+        User.findOne({_id:req.params.id})
+          .then(user=>{
+            let oldPath = user.avatar.replace('http://localhost:5000/','')
+            let buffer = Buffer.from(req.body.avatar, 'base64')
+            let path = `public/avatar/${new Date().valueOf()}.png`
+            fs.writeFile(path, buffer, function(err){
+              if(err){
+                console.log(err);
+              } else {
+                avatar = `http://localhost:5000/${path}`
+                User.findOneAndUpdate({ _id: req.params.id },
+                  { $set: {
+                    name: req.body.name,
+                    email: req.body.email,
+                    avatar: avatar
+                  }},
+                  { new: true }
+                )
+                .then(user => res.json('更新个人信息成功'))
+              }
+            })
+            if(user.avatar!=='http://localhost:5000/assets/img/avatar.png'){
+              fs.unlink(oldPath,err=>{
+                if(err) {
+                  console.log(err)
+                }
+              })
+            }
+        })
+      } else {
+        avatar = req.body.avatar
+        User.findOneAndUpdate({ _id: req.params.id },
+          { $set: {
+            name: req.body.name,
+            email: req.body.email,
+            avatar: avatar
+          }},
+          { new: true }
+        )
+        .then(user => res.json('更新个人信息成功'))
+      }
+    }
+  })
 })
 
 // $route GET api/users/current

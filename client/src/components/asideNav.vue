@@ -6,14 +6,14 @@
           <router-link to="/index">
             <el-menu-item index="1">
                 <template slot="title">
-                  <i class="el-icon-menu"></i>
+                  <i class="el-icon-s-home"></i>
                   <span>首页</span>
                 </template>
             </el-menu-item>
           </router-link>
           <el-submenu index="2">
             <template slot="title">
-              <i class="el-icon-date"></i>
+              <i class="el-icon-s-order"></i>
               <span>课程管理</span>
             </template>
             <el-menu-item-group>
@@ -26,7 +26,7 @@
           </el-submenu>
           <el-submenu index="3">
             <template slot="title">
-              <i class="el-icon-tickets"></i>
+              <i class="el-icon-user-solid"></i>
               <span>个人中心</span>
             </template>
             <el-menu-item-group>
@@ -38,6 +38,11 @@
               <router-link to="/collection">
                 <el-menu-item index="3-2">
                   <span>我的收藏</span>
+                </el-menu-item>
+              </router-link>
+              <router-link to="/subscription">
+                <el-menu-item index="3-3">
+                  <span>我的订阅</span>
                 </el-menu-item>
               </router-link>
             </el-menu-item-group>
