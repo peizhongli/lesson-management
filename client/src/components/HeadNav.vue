@@ -24,7 +24,7 @@ export default {
     return {}
   },
   created() {
-    console.log(this.$store.getters.user.avatar)
+    console.log(this.$store.getters.user)
   },
   computed: {
     user (){

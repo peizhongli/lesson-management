@@ -87,6 +87,8 @@ export default {
           message: '评论成功',
           type: 'success'
         })
+        this.commentContent = ''
+        this.getLessonInfo()
       })
       .catch(err=>{
         console.log(err)

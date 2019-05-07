@@ -4,35 +4,52 @@
       <section slot="header">
         <p class="title">
           {{lessonInfo.title}}
-          <el-button type="primary" @click="subscribeLesson">{{lessonInfo.subscribed?'已订阅':'+订阅'}}</el-button>
+          <el-button
+            type="primary"
+            :class="lessonInfo.subscribed?'subscribed':''"
+            @click="subscribeLesson"
+          >{{lessonInfo.subscribed?'已订阅':'+订阅'}}</el-button>
         </p>
         <p class="mes">
-          <span class="iconfont icon-people author"> {{lessonInfo.author}}</span>
+          <span class="iconfont icon-people author">{{lessonInfo.author}}</span>
           <time class="time el-icon-time">上传于{{lessonInfo.date}}</time>
           <span>分类：{{lessonInfo.type}}</span>
           <span v-if="lessonInfo.collections">收藏数：{{lessonInfo.collections.length}}</span>
           <span v-if="lessonInfo.views">{{lessonInfo.views}}人看过</span>
         </p>
       </section>
-      <section class="info">
-        <div class="lesson-content ql-editor">
-          <div class="lesson-main" v-html="lessonContent"></div>
-        </div>
+      <section>
+        <el-table :data="lessonInfo.articleList" class="lesson-table" border>
+          <el-table-column prop="date" label="上传时间" width="120"></el-table-column>
+          <el-table-column prop="title" label="标题"></el-table-column>
+          <el-table-column fixed="right" label="操作" width="100">
+            <template slot-scope="scope">
+              <el-button @click="toEdit(scope)" type="text" size="small" v-if="identity==='老师'">编辑</el-button>
+              <el-button @click="toBrowse(scope)" type="text" size="small">浏览</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
       </section>
-      <section class="comment">
+      <section class="comment" v-if="identity!=='老师'">
         <p class="comment-title">评论区</p>
         <el-input
           type="textarea"
           autosize
           placeholder="说点什么吧..."
           v-model="commentContent"
-          maxlength="500" show-word-limit spellcheck="false">
-        </el-input>
+          maxlength="500"
+          show-word-limit
+          spellcheck="false"
+        ></el-input>
         <el-button type="primary" size="mini" class="comment-btn" @click="postComment">评论</el-button>
         <ul class="comment-list">
           <li v-for="(item, index) in lessonInfo.discussion" :key="index">
-          <p class="iconfont icon-people comment-content">{{item.name}}:<span>{{item.content}}</span><p>
-          <p class="el-icon-time">{{item.time}}</p>
+            <p class="iconfont icon-people comment-content">
+              {{item.name}}:
+              <span>{{item.content}}</span>
+            </p>
+            <p></p>
+            <p class="el-icon-time">{{item.time}}</p>
           </li>
         </ul>
       </section>
@@ -40,65 +57,79 @@
   </div>
 </template>
 <script>
-import 'quill/dist/quill.core.css'
+import "quill/dist/quill.core.css";
 export default {
-  name: 'lessonInfo',
+  name: "lessonInfo",
   data() {
     return {
       lessonId: this.$route.query.lesson,
       lessonInfo: {},
-      lessonContent: '',
-      commentContent: ''
-    }
+      lessonContent: "",
+      commentContent: ""
+    };
   },
   created() {
-    this.getLessonInfo()
-    this.getLessonContent()
+    this.getLessonInfo();
+  },
+  computed: {
+    identity() {
+      return this.$store.getters.user.identity;
+    }
   },
   methods: {
     getLessonInfo: function() {
-      this.$axios.get(`/api/profiles/${this.lessonId}`)
-      .then(res=>{
-        this.lessonInfo = res.data
-      })
-      .catch(err=>{
-        console.log(err)
-      })
-    },
-    getLessonContent: function() {
-      this.$axios.get(`/api/profiles/edit/${this.lessonId}`)
-      .then(res=>{
-        this.lessonContent = res.data
-      })
-      .catch(err=>{
-        console.log(err)
-      })
+      this.$axios
+        .get(`/api/profiles/${this.lessonId}`)
+        .then(res => {
+          this.lessonInfo = res.data;
+        })
+        .catch(err => {
+          console.log(err);
+        });
     },
     postComment: function() {
-      let data = {content: this.commentContent}
-      this.$axios.post(`/api/profiles/comment/${this.lessonId}`,data)
-      .then(res=>{
-        this.$message({
-          message: '评论成功',
-          type: 'success'
+      let data = { content: this.commentContent };
+      this.$axios
+        .post(`/api/profiles/comment/${this.lessonId}`, data)
+        .then(res => {
+          this.$message({
+            message: "评论成功",
+            type: "success"
+          });
+          this.commentContent = "";
+          this.getLessonInfo();
         })
-      })
-      .catch(err=>{
-        console.log(err)
-      })
+        .catch(err => {
+          console.log(err);
+        });
     },
     subscribeLesson: function() {
-      let status = this.lessonInfo.subscribed?0:1
-      this.$axios.post(`/api/profiles/subscribe/${this.lessonId}`,{status})
-      .then(res=>{
-        this.lessonInfo.subscribed = !this.lessonInfo.subscribed
-      })
-      .catch(err=>{
-        console.log(err)
-      })
+      let status = this.lessonInfo.subscribed ? 0 : 1;
+      this.$axios
+        .post(`/api/profiles/subscribe/${this.lessonId}`, { status })
+        .then(res => {
+          this.lessonInfo.subscribed = !this.lessonInfo.subscribed;
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    toEdit: function(item, index) {
+      console.log(item.$index);
+      this.$router.push({
+        path: "lessonEdit",
+        query: { lesson: this.lessonId, index: item.$index }
+      });
+    },
+    toBrowse: function(item, index) {
+      console.log(item.$index);
+      this.$router.push({
+        path: "lessonBrowse",
+        query: { lesson: this.lessonId, index: item.$index }
+      });
     }
-  },
-}
+  }
+};
 </script>
 <style scoped>
 #lesson-info .info {
@@ -117,12 +148,19 @@ export default {
   top: 50%;
   transform: translateY(-50%);
 }
+
+#lesson-info p.title button.subscribed {
+  background-color: #e1e1e1;
+  color: #999;
+  border-color: #e1e1e1;
+}
 #lesson-info p.mes {
   color: #999;
   font-size: 14px;
   margin-top: 10px;
 }
-#lesson-info p.mes span, #lesson-info p.mes time {
+#lesson-info p.mes span,
+#lesson-info p.mes time {
   margin-right: 15px;
 }
 #lesson-info .comment {
@@ -157,9 +195,14 @@ export default {
   color: #777;
   margin-left: 10px;
 }
+#lesson-info .lesson-table {
+  margin: 20px auto;
+  width: 80%;
+}
 </style>
 <style>
-#lesson-info .el-card__body, #lesson-info .ql-editor {
+#lesson-info .el-card__body,
+#lesson-info .ql-editor {
   padding: 0;
 }
 #lesson-info textarea {

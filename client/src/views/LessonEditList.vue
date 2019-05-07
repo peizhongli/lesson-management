@@ -17,7 +17,7 @@
           <el-table-column prop="title" label="标题"></el-table-column>
           <el-table-column fixed="right" label="操作" width="100">
             <template slot-scope="scope">
-              <el-button @click="toEdit(scope)" type="text" size="small">编辑</el-button>
+              <el-button @click="toEdit(scope)" type="text" size="small" v-if="identity==='老师'">编辑</el-button>
               <el-button @click="toBrowse(scope)" type="text" size="small">浏览</el-button>
             </template>
           </el-table-column>
@@ -39,6 +39,11 @@ export default {
   },
   created() {
     this.getLessonInfo();
+  },
+  computed: {
+    identity (){
+      return this.$store.getters.user.identity;
+    }
   },
   methods: {
     getLessonInfo: function() {

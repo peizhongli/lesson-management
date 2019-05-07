@@ -9,7 +9,10 @@
             <div class="lesson-info">
               <p class="title">{{item.title}}<button @click="toDetails(item)" class="to-details el-icon-arrow-right"></button></p>
               <div class="bottom clearfix">
-                <p class="type">分类：{{item.type}}</p>
+                <p class="type">
+                  <span class="el-icon-edit">作者：{{item.author}}</span>
+                  <span>分类：{{item.type}}</span>
+                </p>
                 <time class="time el-icon-time">上传于{{item.date}}</time>
                 <p class="tag">
                   <span>
@@ -179,6 +182,9 @@ export default {
    font-size: 13px;
    color: #999;
    line-height: 24px;
+ }
+ #subscription-wrap .el-card p.type span {
+   margin-right: 15px;
  }
  #subscription-wrap .el-card p.tag {
    display: flex;
