@@ -101,7 +101,7 @@ router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => 
   let sum = 0
   for(i in req.query) {
     if(i==='title'){
-      query.title = new RegExp(req.query.title)
+      query.title = new RegExp(req.query.title,'i')
     } else if(i==='pageSize'){
       limit = req.query.pageSize
     } else if(i==='currentPage'){
@@ -184,6 +184,7 @@ router.get('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
       let newProfile = {}
       let collected = ''
       let liked = ''
+      console.log(profile.collections.indexOf(user))
       if (profile.collections.indexOf(user) !== -1) {
         collected = true
       } else {
@@ -345,7 +346,8 @@ router.get('/edit/:id/:index', passport.authenticate('jwt', {session: false}), (
         } else {
           res.json({
             title: profile.articleList[req.params.index].title,
-            content: data
+            content: data,
+            date: profile.articleList[req.params.index].date
           })
         }
       })
@@ -372,7 +374,6 @@ router.post('/collect/:id', passport.authenticate('jwt', { session: false }), (r
       { $pull: { collections: req.headers.username } }
     ).then(
       profile => {
-        console.log(res)
         res.json({data:profile})
       })
   }
@@ -437,7 +438,6 @@ router.post('/like/:id', passport.authenticate('jwt', { session: false }), (req,
       { $pull: { likes: req.headers.username } }
     ).then(
       profile => {
-        console.log(res)
         res.json(profile)
       })
   }
