@@ -67,7 +67,7 @@ export default {
     font-size: 14px;
     line-height: 60px;
     color: #fff;
-    background-color: #409EFF;
+    background: linear-gradient(to left, #c4e17f, #c4e17f 12.5%, #f7fdca 12.5%, #f7fdca 25%, #fecf71 25%, #fecf71 37.5%, #f0776c 37.5%, #f0776c 50%, #db9dbe 50%, #db9dbe 62.5%, #c49cde 62.5%, #c49cde 75%, #62c2e4 75%, #62c2e4 87.5%, #409EFF 87.5%, #409EFF);
   }
   .header .user-box {
     text-align: right;
@@ -83,6 +83,7 @@ export default {
     margin-left: 8px;
     font-size: 16px;
     color: #fff;
+    cursor: pointer;
   }
 </style>
 

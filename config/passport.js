@@ -14,7 +14,7 @@ module.exports = passport => {
           if(user){
             return done(null,user);
           }
-          return done(null,'aaaaaaaa');
+          return done(null,'未找到！');
         })
         .catch(err => {
           console.log(err);

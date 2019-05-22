@@ -1,5 +1,5 @@
 <template>
-  <el-aside width="200px">
+  <el-aside width="170px">
     <el-row class="aside-nav">
       <el-col>
         <el-menu active-text-color="#409EFF" router :default-active="$route.path">
@@ -63,7 +63,7 @@ export default {
   left: 0;
   top: 60px;
   z-index: 5;
-  width: 200px;
+  width: 170px;
   height: 100%;
 }
 .aside-nav .el-col,
@@ -75,6 +75,10 @@ export default {
 }
 .aside-nav .is-active a {
   color: #409eff;
+}
+.el-submenu .el-menu-item {
+  padding: 0;
+  min-width: auto;
 }
 </style>
 

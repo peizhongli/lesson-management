@@ -30,11 +30,11 @@ router.get('/test', (req, res) => {
 // @access private
 router.post('/add', passport.authenticate('jwt', { session: false }), upload.single('cover'), (req, res) => {
   console.log(req.body)
-  if(req.body.cover!==''){
+  if (req.body.cover !== '') {
     let buffer = Buffer.from(req.body.cover, 'base64')
     let path = `public/covers/${new Date().valueOf()}.png`
-    fs.writeFile(path, buffer, function(err){
-      if(err){
+    fs.writeFile(path, buffer, function (err) {
+      if (err) {
         console.log(err);
       } else {
         let profileFileds = {
@@ -99,20 +99,20 @@ router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => 
   let limit = 8
   let skip = 0
   let sum = 0
-  for(i in req.query) {
-    if(i==='title'){
-      query.title = new RegExp(req.query.title,'i')
-    } else if(i==='pageSize'){
+  for (i in req.query) {
+    if (i === 'title') {
+      query.title = new RegExp(req.query.title, 'i')
+    } else if (i === 'pageSize') {
       limit = req.query.pageSize
-    } else if(i==='currentPage'){
-      skip = (req.query.currentPage-1)*req.query.pageSize
+    } else if (i === 'currentPage') {
+      skip = (req.query.currentPage - 1) * req.query.pageSize
     }
-      else {
+    else {
       query[`${i}`] = req.query[i]
     }
   }
-  Profile.find(query).countDocuments((err,sum)=>{
-    if(err) {
+  Profile.find(query).countDocuments((err, sum) => {
+    if (err) {
       console.log(err)
     } else {
       sum = sum
@@ -171,11 +171,44 @@ router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => 
   })
 })
 
+
+// $route GET api/profiles/hot
+// @desc 获取热门信息
+// @access private
+router.get('/hot', passport.authenticate('jwt', { session: false }), (req, res) => {
+  Profile.find().limit(Number(8)).sort({ 'views': -1 })
+    .then(profile => {
+      if (!profile) {
+        return res.status(404).json('没有任何内容');
+      }
+      let newProfile = []
+      profile.map(item => {
+        newProfile.push({
+          id: item.id,
+          title: item.title,
+          author: item.author,
+          cover: item.cover,
+          date: item.date,
+          likes: item.likes,
+          discussion: item.discussion,
+          views: item.views
+        })
+      })
+      res.json({
+        data: newProfile
+      });
+    })
+    .catch(err => {
+      console.log(err)
+      res.status(400).json('查询失败');
+    })
+})
+
 // $route GET api/profiles/:id
 // @desc 获取单个信息
 // @access private
 router.get('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
-  Profile.findOneAndUpdate({ _id: req.params.id },{$inc: {views: 1}})
+  Profile.findOneAndUpdate({ _id: req.params.id }, { $inc: { views: 1 } })
     .then(profile => {
       if (!profile) {
         return res.status(404).json('没有任何内容');
@@ -227,107 +260,121 @@ router.get('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
 // @desc 编辑信息接口
 // @access private
 router.put('/edit/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
-  if(req.body.cover.indexOf('http://localhost:5000/')===-1){
+  if (req.body.cover.indexOf('http://localhost:5000/') === -1) {
     let buffer = Buffer.from(req.body.cover, 'base64')
     let path = `public/covers/${new Date().valueOf()}.png`
-    fs.writeFile(path, buffer, function(err){
-      if(err){
+    fs.writeFile(path, buffer, function (err) {
+      if (err) {
         console.log(err);
       } else {
         Profile.findOne({ _id: req.params.id })
           .then(profile => {
-            if(profile.cover!=='http://localhost:5000/assets/img/solved.png'){
-              let oldPath = profile.cover.replace('http://localhost:5000/','')
-              fs.unlink(oldPath, err=>{
-                if(err) {
+            if (profile.cover !== 'http://localhost:5000/assets/img/solved.png') {
+              let oldPath = profile.cover.replace('http://localhost:5000/', '')
+              fs.unlink(oldPath, err => {
+                if (err) {
                   console.log(err)
                 } else {
-                  Profile.updateOne({_id: req.params.id},{$set:{
-                    title: req.body.title,
-                    describe: req.body.describe,
-                    type: req.body.type,
-                    cover: `http://localhost:5000/${path}`,
-                  }})
-                  .then (profile=>{
-                    res.json({
-                      message:'更新成功',
-                      data: profile
-                    })
+                  Profile.updateOne({ _id: req.params.id }, {
+                    $set: {
+                      title: req.body.title,
+                      describe: req.body.describe,
+                      type: req.body.type,
+                      cover: `http://localhost:5000/${path}`,
+                    }
                   })
+                    .then(profile => {
+                      res.json({
+                        message: '更新成功',
+                        data: profile
+                      })
+                    })
                 }
               })
             } else {
-              Profile.updateOne({_id: req.params.id},{$set:{
-                title: req.body.title,
-                describe: req.body.describe,
-                type: req.body.type,
-                cover: `http://localhost:5000/${path}`,
-              }})
-              .then (profile=>{
-                res.json({
-                  message:'更新成功',
-                  data: profile
-                })
+              Profile.updateOne({ _id: req.params.id }, {
+                $set: {
+                  title: req.body.title,
+                  describe: req.body.describe,
+                  type: req.body.type,
+                  cover: `http://localhost:5000/${path}`,
+                }
               })
+                .then(profile => {
+                  res.json({
+                    message: '更新成功',
+                    data: profile
+                  })
+                })
             }
           })
       }
     })
   } else {
-    Profile.updateOne({_id: req.params.id},{$set:{
-      title: req.body.title,
-      describe: req.body.describe,
-      type: req.body.type,
-      cover: 'http://localhost:5000/assets/img/solved.png',
-    }})
-    .then (profile=>{
-      res.json({
-        message:'更新成功',
-        data: profile
-      })
+    Profile.updateOne({ _id: req.params.id }, {
+      $set: {
+        title: req.body.title,
+        describe: req.body.describe,
+        type: req.body.type,
+        cover: 'http://localhost:5000/assets/img/solved.png',
+      }
     })
+      .then(profile => {
+        res.json({
+          message: '更新成功',
+          data: profile
+        })
+      })
   }
 })
 
 // $route POST api/profiles/save/:id
 // @desc 保存文章接口
 // @access pr9ivate
-router.post('/save/:id', passport.authenticate('jwt', {session: false}), (req, res)=>{
+router.post('/save/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
   let filePath = `public/article/${new Date().valueOf()}.txt`
   let index = req.body.index
-  fs.writeFile(filePath, req.body.data,err=>{
-    if(err) {
+  fs.writeFile(filePath, req.body.data, err => {
+    if (err) {
       console.log(err)
     } else {
-      Profile.findOne({_id:req.params.id})
-      .then(profile=>{
-        if(profile.articleList[index]) {
-          let path = profile.articleList[index].path
-          console.log(path)
-          fs.unlink(path,err=>{
-            if(err) {
-              console.log(err)
-            } else {
-              Profile.updateOne({_id: req.params.id},{ $set: { ['articleList.'+index]: {
-                path: filePath,
-                title: req.body.title,
-              } }},)
-              .then(profile=>{
-                res.json('修改成功')
+      Profile.findOne({ _id: req.params.id })
+        .then(profile => {
+          if (profile.articleList[index]) {
+            let path = profile.articleList[index].path
+            console.log(path)
+            fs.unlink(path, err => {
+              if (err) {
+                console.log(err)
+              } else {
+                Profile.updateOne({ _id: req.params.id }, {
+                  $set: {
+                    ['articleList.' + index]: {
+                      path: filePath,
+                      title: req.body.title,
+                    }
+                  }
+                })
+                  .then(profile => {
+                    res.json('修改成功')
+                  })
+              }
+            })
+          } else {
+            Profile.updateOne({ _id: req.params.id }, {
+              $set: {
+                ['articleList.' + index]: {
+                  path: filePath,
+                  title: req.body.title,
+                  date: new Date().toLocaleString()
+                }
+              }
+            })
+              .then(profile => {
+                res.json('创建成功')
               })
-            }
-          })
-        } else {
-          Profile.updateOne({_id: req.params.id},{$set:{ ['articleList.'+index]: {
-            path: filePath,
-            title: req.body.title,
-            date: new Date().toLocaleString()
-          } }})
-          .then(profile=>{
-            res.json('创建成功')
-          })
-        }
-      })
+          }
+        })
     }
   });
 })
@@ -335,26 +382,26 @@ router.post('/save/:id', passport.authenticate('jwt', {session: false}), (req, r
 // $route GET api/profiles/edit/:id
 // @desc 读取文章接口
 // @access pr9ivate
-router.get('/edit/:id/:index', passport.authenticate('jwt', {session: false}), (req, res)=>{
-  Profile.findOne({_id:req.params.id})
-  .then(profile=>{
-    let path = profile.articleList[req.params.index].path
-    if(profile.articleList[req.params.index]) {
-      fs.readFile(path,'utf-8',(err,data)=>{
-        if(err) {
-          console.log(err)
-        } else {
-          res.json({
-            title: profile.articleList[req.params.index].title,
-            content: data,
-            date: profile.articleList[req.params.index].date
-          })
-        }
-      })
-    } else {
-      res.json('没有找到相关内容')
-    }
-  })
+router.get('/edit/:id/:index', passport.authenticate('jwt', { session: false }), (req, res) => {
+  Profile.findOne({ _id: req.params.id })
+    .then(profile => {
+      let path = profile.articleList[req.params.index].path
+      if (profile.articleList[req.params.index]) {
+        fs.readFile(path, 'utf-8', (err, data) => {
+          if (err) {
+            console.log(err)
+          } else {
+            res.json({
+              title: profile.articleList[req.params.index].title,
+              content: data,
+              date: profile.articleList[req.params.index].date
+            })
+          }
+        })
+      } else {
+        res.json('没有找到相关内容')
+      }
+    })
 })
 
 // $route POST api/profiles/collect/:id
@@ -374,7 +421,7 @@ router.post('/collect/:id', passport.authenticate('jwt', { session: false }), (r
       { $pull: { collections: req.headers.username } }
     ).then(
       profile => {
-        res.json({data:profile})
+        res.json({ data: profile })
       })
   }
 })
@@ -386,13 +433,15 @@ router.post('/comment/:id', passport.authenticate('jwt', { session: false }), (r
   console.log(Date.now())
   Profile.findOneAndUpdate(
     { _id: req.params.id },
-    { $addToSet: {
-      discussion: {
-        name: req.headers.username,
-        content: req.body.content,
-        time: new Date().toLocaleString()
+    {
+      $addToSet: {
+        discussion: {
+          name: req.headers.username,
+          content: req.body.content,
+          time: new Date().toLocaleString()
+        }
       }
-    }},
+    },
     { new: true }
   ).then(profile => res.json(profile))
 })
@@ -414,7 +463,7 @@ router.post('/subscribe/:id', passport.authenticate('jwt', { session: false }), 
     ).then(
       profile => {
         console.log(res)
-        res.json({data:profile})
+        res.json({ data: profile })
       })
   }
 })

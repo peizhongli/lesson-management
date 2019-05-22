@@ -80,6 +80,7 @@ export default {
   methods: {
     // 获取所有课程信息
     getLessonList: function(params) {
+      console.log(params)
       this.$axios.get('/api/profiles/',{params})
         .then(res=>{
           console.log(res.data)

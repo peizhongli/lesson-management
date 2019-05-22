@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const passport = require('passport');
-
+const io = require('socket.io')
 const app = express();
 
 //引入users
@@ -33,6 +33,8 @@ require('./config/passport')(passport);
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+
+
 
 // 格式化日期
 function dateFormat(date, fmt) {
