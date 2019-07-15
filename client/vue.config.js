@@ -37,6 +37,7 @@ module.exports = {
   pwa: { // 单页插件相关配置 https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-pwa
   },
   devServer: {
+    disableHostCheck: true,
     open: true,
     host: '0.0.0.0',
     port: 8080,

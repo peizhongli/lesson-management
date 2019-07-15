@@ -245,7 +245,17 @@ export default {
               // 存储token到vuex中
               this.$store.dispatch("setAuthenticated", !this.$isEmpty(decoded));
               this.$store.dispatch("setUser", decoded);
-
+              this.$axios
+                .get("/api/profiles/subscription")
+                .then(res => {
+                  this.$socket.emit("login", {
+                    username: name,
+                    list: res.data.list
+                  });
+                })
+                .catch(err => {
+                  console.log(err);
+                });
               // 登录成功，跳转至首页
               this.$router.push("/index");
             })
@@ -285,9 +295,12 @@ export default {
   );
 }
 .login .el-card {
-  position: relative;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 500px;
-  margin: 150px auto 0;
+  margin: 0 auto;
   border: 0;
   overflow: hidden;
   z-index: 5;
@@ -355,7 +368,7 @@ export default {
 }
 .login .el-form-item__content {
   width: 300px;
-  margin: 0 auto!important;
+  margin: 0 auto !important;
 }
 </style>
 

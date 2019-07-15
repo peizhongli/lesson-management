@@ -168,7 +168,7 @@ export default {
 #user-info .info p.mes span {
   margin-right: 10px;
 }
-#user-info .el-card .el-card__header {
+#user-info .el-card .el-card__header, #user-info .el-card .el-card__body {
   position: relative;
 }
 #user-info .el-card .title {
@@ -182,6 +182,9 @@ export default {
   border-radius: 50%;
 }
 #user-info .el-card .user-content {
+  position: absolute;
+  transform: translateY(-50%);
+  top: 50%;
   margin-left: 200px;
   color: #999;
   line-height: 30px;

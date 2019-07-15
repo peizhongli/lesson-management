@@ -196,7 +196,7 @@ export default {
     },
 
     toEdit(item) {
-      this.$router.push({path: 'lessonInfo', query: { lesson: item.id }})
+      this.$router.push({path: 'lessonEditList', query: { lesson: item.id }})
     },
 
     // 删除课程信息

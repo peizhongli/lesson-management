@@ -169,6 +169,11 @@ export default {
   color: #777;
   margin-left: 10px;
 }
+#lesson-info .lesson-content>p {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
 </style>
 <style>
 #lesson-info .el-card__body, #lesson-info .ql-editor {

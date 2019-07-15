@@ -10,11 +10,17 @@ import '../public/css/iconfont.css'
 import 'quill/dist/quill.core.css'
 import 'quill/dist/quill.snow.css'
 import 'quill/dist/quill.bubble.css'
+import VueSocketIO from 'vue-socket.io'
 
 Vue.config.productionTip = false
 Vue.use(ElementUI);
 Vue.prototype.$isEmpty = publicMethods.isEmpty;
 Vue.prototype.$axios = axios;
+
+Vue.use(new VueSocketIO({
+  debug: true,
+  connection: 'http://localhost:5000',
+}))
 
 new Vue({
   router,

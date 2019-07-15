@@ -29,7 +29,6 @@ router.get('/test', (req, res) => {
 // @desc 创建信息接口
 // @access private
 router.post('/add', passport.authenticate('jwt', { session: false }), upload.single('cover'), (req, res) => {
-  console.log(req.body)
   if (req.body.cover !== '') {
     let buffer = Buffer.from(req.body.cover, 'base64')
     let path = `public/covers/${new Date().valueOf()}.png`
@@ -80,8 +79,6 @@ router.post('/add', passport.authenticate('jwt', { session: false }), upload.sin
 // @desc 上传图片
 // @access private
 router.post('/add', passport.authenticate('jwt', { session: false }), upload.single('cover'), (req, res, next) => {
-  console.log(req.file)
-  console.log(req.body)
   const url = `/${req.file.destination}${req.file.filename}`
   res.json({
     url,
@@ -204,6 +201,29 @@ router.get('/hot', passport.authenticate('jwt', { session: false }), (req, res) 
     })
 })
 
+// $route GET api/profiles/hot
+// @desc 获取订阅信息
+// @access private
+router.get('/subscription', passport.authenticate('jwt', { session: false }), (req, res) => {
+  Profile.find({subscription: req.headers.username}).sort({ 'views': -1 })
+    .then(profile => {
+      if (!profile) {
+        return res.status(404).json({list:[]});
+      }
+      let newProfile = []
+      profile.map(item => {
+        newProfile.push(item.id)
+      })
+      res.json({
+        list: newProfile
+      });
+    })
+    .catch(err => {
+      console.log(err)
+      res.status(400).json('查询失败');
+    })
+})
+
 // $route GET api/profiles/:id
 // @desc 获取单个信息
 // @access private
@@ -217,7 +237,6 @@ router.get('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
       let newProfile = {}
       let collected = ''
       let liked = ''
-      console.log(profile.collections.indexOf(user))
       if (profile.collections.indexOf(user) !== -1) {
         collected = true
       } else {
@@ -316,7 +335,7 @@ router.put('/edit/:id', passport.authenticate('jwt', { session: false }), (req, 
         title: req.body.title,
         describe: req.body.describe,
         type: req.body.type,
-        cover: 'http://localhost:5000/assets/img/solved.png',
+        cover: req.body.cover,
       }
     })
       .then(profile => {
@@ -342,7 +361,6 @@ router.post('/save/:id', passport.authenticate('jwt', { session: false }), (req,
         .then(profile => {
           if (profile.articleList[index]) {
             let path = profile.articleList[index].path
-            console.log(path)
             fs.unlink(path, err => {
               if (err) {
                 console.log(err)
@@ -352,7 +370,8 @@ router.post('/save/:id', passport.authenticate('jwt', { session: false }), (req,
                     ['articleList.' + index]: {
                       path: filePath,
                       title: req.body.title,
-                    }
+                      date: profile.date
+                    },
                   }
                 })
                   .then(profile => {
@@ -361,18 +380,33 @@ router.post('/save/:id', passport.authenticate('jwt', { session: false }), (req,
               }
             })
           } else {
-            Profile.updateOne({ _id: req.params.id }, {
-              $set: {
-                ['articleList.' + index]: {
-                  path: filePath,
-                  title: req.body.title,
-                  date: new Date().toLocaleString()
+            if(index>0){
+              Profile.updateOne({ _id: req.params.id }, {
+                $set: {
+                  ['articleList.' + index]: {
+                    path: filePath,
+                    title: req.body.title,
+                    date: new Date().toLocaleString()
+                  }
                 }
-              }
-            })
-              .then(profile => {
-                res.json('创建成功')
               })
+                .then(profile => {
+                  res.json('创建成功')
+                })
+            } else {
+              Profile.updateOne({ _id: req.params.id }, {
+                $addToSet: {
+                  articleList: {
+                    path: filePath,
+                    title: req.body.title,
+                    date: new Date().toLocaleString()
+                  }
+                }
+              })
+                .then(profile => {
+                  res.json('创建成功')
+                })
+            }
           }
         })
     }
@@ -385,13 +419,14 @@ router.post('/save/:id', passport.authenticate('jwt', { session: false }), (req,
 router.get('/edit/:id/:index', passport.authenticate('jwt', { session: false }), (req, res) => {
   Profile.findOne({ _id: req.params.id })
     .then(profile => {
-      let path = profile.articleList[req.params.index].path
       if (profile.articleList[req.params.index]) {
+        let path = profile.articleList[req.params.index].path
         fs.readFile(path, 'utf-8', (err, data) => {
           if (err) {
             console.log(err)
           } else {
             res.json({
+              header: profile.title,
               title: profile.articleList[req.params.index].title,
               content: data,
               date: profile.articleList[req.params.index].date
@@ -399,7 +434,10 @@ router.get('/edit/:id/:index', passport.authenticate('jwt', { session: false }),
           }
         })
       } else {
-        res.json('没有找到相关内容')
+        res.json({
+          header: profile.title,
+          msg:'没有找到相关内容'
+        })
       }
     })
 })
@@ -408,7 +446,6 @@ router.get('/edit/:id/:index', passport.authenticate('jwt', { session: false }),
 // @desc 收藏信息接口
 // @access private
 router.post('/collect/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
-  console.log(req.body.status)
   if (req.body.status === 1) {
     Profile.findOneAndUpdate(
       { _id: req.params.id },
@@ -430,7 +467,6 @@ router.post('/collect/:id', passport.authenticate('jwt', { session: false }), (r
 // @desc 评论信息接口
 // @access private
 router.post('/comment/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
-  console.log(Date.now())
   Profile.findOneAndUpdate(
     { _id: req.params.id },
     {
@@ -462,7 +498,6 @@ router.post('/subscribe/:id', passport.authenticate('jwt', { session: false }), 
       { $pull: { subscription: req.headers.username } }
     ).then(
       profile => {
-        console.log(res)
         res.json({ data: profile })
       })
   }
@@ -472,9 +507,6 @@ router.post('/subscribe/:id', passport.authenticate('jwt', { session: false }), 
 // @desc 点赞信息接口
 // @access private
 router.post('/like/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
-  console.log(req.body.status)
-  console.log(req.params.id)
-  console.log(req.headers.username)
   if (req.body.status === 1) {
     Profile.findOneAndUpdate(
       { _id: req.params.id },

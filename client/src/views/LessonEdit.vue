@@ -21,6 +21,7 @@ export default {
       lessonId: this.$route.query.lesson,
       lessonIndex: this.$route.query.index || 0,
       lessonTitle: "",
+      lessonHeader: '',
       editContent: "",
       editorConfig: {
         theme: "snow",
@@ -59,6 +60,7 @@ export default {
         .then(res => {
           this.editContent = res.data.content;
           this.lessonTitle = res.data.title
+          this.lessonHeader = res.data.header
         })
         .catch(err => {
           console.log(err);
@@ -73,7 +75,13 @@ export default {
         })
         .then(res => {
           this.$message({ message: "保存成功", type: "success" });
+          console.log(this.lessonHeader)
           this.$router.push({path: 'lessonEditList', query: { lesson: this.lessonId }})
+          this.$socket.emit('publish', {
+            username: this.$store.getters.user.name,
+            title: this.lessonHeader,
+            id: this.lessonId
+          });
         })
         .catch(err => {
           console.log(err);

@@ -2,14 +2,7 @@
   <div id="lesson-info">
     <el-card>
       <section slot="header">
-        <p class="title">
-          {{lessonInfo.title}}
-          <el-button
-            type="primary"
-            :class="lessonInfo.subscribed?'subscribed':''"
-            @click="subscribeLesson"
-          >{{lessonInfo.subscribed?'已订阅':'+订阅'}}</el-button>
-        </p>
+        <p class="title">{{lessonInfo.title}}</p>
         <p class="mes">
           <span class="iconfont icon-people author">{{lessonInfo.author}}</span>
           <time class="time el-icon-time">上传于{{lessonInfo.date}}</time>
@@ -17,20 +10,30 @@
           <span v-if="lessonInfo.collections">收藏数：{{lessonInfo.collections.length}}</span>
           <span v-if="lessonInfo.views">{{lessonInfo.views}}人看过</span>
         </p>
+        <el-button
+          type="primary"
+          :class="lessonInfo.subscribed?'subscribed':''"
+          @click="subscribeLesson"
+          class="subscribe-btn"
+        >{{lessonInfo.subscribed?'已订阅':'+订阅'}}</el-button>
       </section>
       <section>
-        <el-table :data="lessonInfo.articleList" class="lesson-table" border>
-          <el-table-column prop="date" label="上传时间" width="120"></el-table-column>
-          <el-table-column prop="title" label="标题"></el-table-column>
-          <el-table-column fixed="right" label="操作" width="100">
-            <template slot-scope="scope">
-              <el-button @click="toEdit(scope)" type="text" size="small" v-if="identity==='老师'">编辑</el-button>
-              <el-button @click="toBrowse(scope)" type="text" size="small">浏览</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+        <div v-if="lessonCount===0">
+          <p class="addtip">还没有创建目录哦~</p>
+        </div>
+        <div v-else>
+          <el-table :data="lessonInfo.articleList" class="lesson-table" border>
+            <el-table-column prop="date" label="上传时间" width="180"></el-table-column>
+            <el-table-column prop="title" label="标题"></el-table-column>
+            <el-table-column fixed="right" label="操作" width="100">
+              <template slot-scope="scope">
+                <el-button @click="toBrowse(scope)" type="text" size="small">浏览</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
       </section>
-      <section class="comment" v-if="identity!=='老师'">
+      <section class="comment">
         <p class="comment-title">评论区</p>
         <el-input
           type="textarea"
@@ -65,7 +68,8 @@ export default {
       lessonId: this.$route.query.lesson,
       lessonInfo: {},
       lessonContent: "",
-      commentContent: ""
+      commentContent: "",
+      lessonCount: 0
     };
   },
   created() {
@@ -82,6 +86,7 @@ export default {
         .get(`/api/profiles/${this.lessonId}`)
         .then(res => {
           this.lessonInfo = res.data;
+          this.lessonCount = res.data.articleList.length;
         })
         .catch(err => {
           console.log(err);
@@ -109,6 +114,17 @@ export default {
         .post(`/api/profiles/subscribe/${this.lessonId}`, { status })
         .then(res => {
           this.lessonInfo.subscribed = !this.lessonInfo.subscribed;
+          if (this.lessonInfo.subscribed) {
+            this.$socket.emit("subscribe", {
+              username: this.$store.getters.user.name,
+              id: this.lessonId
+            });
+          } else {
+            this.$socket.emit("unsubscribe", {
+              username: this.$store.getters.user.name,
+              id: this.lessonId
+            });
+          }
         })
         .catch(err => {
           console.log(err);
@@ -127,6 +143,12 @@ export default {
         path: "lessonBrowse",
         query: { lesson: this.lessonId, index: item.$index }
       });
+    },
+    toNewEdit: function() {
+      this.$router.push({
+        path: "lessonEdit",
+        query: { lesson: this.lessonId, index: this.lessonCount }
+      });
     }
   }
 };
@@ -142,14 +164,17 @@ export default {
   font-weight: bold;
   color: #666;
 }
-#lesson-info p.title button {
+#lesson-info .el-card section {
+  position: relative;
+}
+#lesson-info .el-card section .subscribe-btn {
   position: absolute;
   right: 0;
   top: 50%;
   transform: translateY(-50%);
 }
 
-#lesson-info p.title button.subscribed {
+#lesson-info .subscribe-btn.subscribed {
   background-color: #e1e1e1;
   color: #999;
   border-color: #e1e1e1;
@@ -198,6 +223,14 @@ export default {
 #lesson-info .lesson-table {
   margin: 20px auto;
   width: 80%;
+}
+#lesson-info .addtip {
+  padding: 100px 0;
+  text-align: center;
+  color: #999;
+}
+#lesson-info .add-btn {
+  margin: 20px 0 0 116px;
 }
 </style>
 <style>

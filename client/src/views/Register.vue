@@ -358,9 +358,11 @@ export default {
   background-color: #f7f7f7;
 }
 .register .el-card {
-  position: relative;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 600px;
-  margin: 60px auto 0;
   border: 0;
   z-index: 5;
 }
